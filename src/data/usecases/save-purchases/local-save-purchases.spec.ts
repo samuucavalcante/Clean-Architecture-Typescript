@@ -1,5 +1,5 @@
 import { LocalSavePurchases } from "./local-save-purchases";
-import { mockPurchases } from '../../tests/mock-purchases';
+import { mockPurchases } from "../../tests/mock-purchases";
 import { CacheStoreSpy } from "@/data/tests/mock-cache";
 
 type SutTypes = {
@@ -17,11 +17,11 @@ const makeSut = (): SutTypes => {
 };
 
 describe("LocalSavePurchases", () => {
-  test("Should not delete cache on sut.init", () => {
+  test("Should not delete or insert cache on sut.init", () => {
     const { cacheStore } = makeSut();
     new LocalSavePurchases(cacheStore);
 
-    expect(cacheStore.deleteCallsCount).toBe(0);
+    expect(cacheStore.messages).toEqual([]);
   });
 
   test("Should delete old cache on sut.save", async () => {
@@ -29,7 +29,10 @@ describe("LocalSavePurchases", () => {
 
     await sut.save(mockPurchases());
 
-    expect(cacheStore.deleteCallsCount).toBe(1);
+    expect(cacheStore.messages).toEqual([
+      CacheStoreSpy.Message.delete,
+      CacheStoreSpy.Message.insert
+    ]);
     expect(cacheStore.deleteKey).toBe("purchases");
   });
 
@@ -39,7 +42,9 @@ describe("LocalSavePurchases", () => {
 
     const promise = sut.save(mockPurchases());
 
-    expect(cacheStore.insertCallsCount).toBe(0);
+    expect(cacheStore.messages).toEqual([
+      CacheStoreSpy.Message.delete
+    ]);
     expect(promise).rejects.toThrow();
   });
 
@@ -48,19 +53,25 @@ describe("LocalSavePurchases", () => {
     const purchases = mockPurchases();
     await sut.save(purchases);
 
-    expect(cacheStore.insertCallsCount).toBe(1);
-    expect(cacheStore.deleteCallsCount).toBe(1);
+    expect(cacheStore.messages).toEqual([
+      CacheStoreSpy.Message.delete,
+      CacheStoreSpy.Message.insert
+    ]);
     expect(cacheStore.insertKey).toBe("purchases");
     expect(cacheStore.insertValue).toEqual(purchases);
   });
 
   test("Should throw if insert throws", async () => {
     const { sut, cacheStore } = makeSut();
-    
+
     cacheStore.simulateInsertError();
 
     const promise = sut.save(mockPurchases());
-
+    
+    expect(cacheStore.messages).toEqual([
+      CacheStoreSpy.Message.delete,
+      CacheStoreSpy.Message.insert
+    ]);
     expect(promise).rejects.toThrow();
   });
 });
