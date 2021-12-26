@@ -58,7 +58,7 @@ describe("LocalSavePurchases", () => {
       CacheStoreSpy.Message.insert
     ]);
     expect(cacheStore.insertKey).toBe("purchases");
-    expect(cacheStore.insertValue).toEqual(purchases);
+     expect(cacheStore.insertValue).toEqual(purchases);
   });
 
   test("Should throw if insert throws", async () => {
@@ -72,6 +72,6 @@ describe("LocalSavePurchases", () => {
       CacheStoreSpy.Message.delete,
       CacheStoreSpy.Message.insert
     ]);
-    expect(promise).rejects.toThrow();
+    await expect(promise).rejects.toThrow();
   });
 });
