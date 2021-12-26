@@ -22,8 +22,7 @@ export class LocalLoadPurchases implements SavePurchases, LoadPurchases {
       const maxAge = new Date(cache.timestamp)
       maxAge.setDate(maxAge.getDate() + 3)
       if(maxAge > this.currentDate) return cache.value;
-      else this.cacheStore.delete(this.key);
-      return [];
+      else throw new Error();
     } catch (err) {
       this.cacheStore.delete(this.key);
       return [];
